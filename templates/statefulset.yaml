@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "kc.fullname" . }}
+  labels:
+    {{- include "kc.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Values.service.headlessName }}
+  replicas: {{ .Values.replicaCount }}
+  updateStrategy:
+    type: {{ .Values.updateStrategy.type }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kc.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "kc.labels" . | nindent 8 }}
+      annotations:
+        {{- include "kc.annotations" . | nindent 8 }}
+    spec:
+      serviceAccount: {{ .Values.serviceAccount.name }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      securityContext:
+        {{- if .Values.podSecurityContext }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- else }}
+        {{- include "kc.defaults.podSecurityContext" . | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: keycloak
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}@{{ .Values.image.digest }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http-{{ .Values.service.port }}
+              containerPort: {{ .Values.service.port }}
+            - name: http-{{ .Values.service.managementPort }}
+              containerPort: {{ .Values.service.managementPort }}
+          env:
+            {{- include "kc.envFromSecrets" . | nindent 12 }}
+            {{- include "kc.envFromValues" . | nindent 12 }}
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: JAVA_OPTS_APPEND
+              value: '-Djgroups.bind.address=$(POD_IP)'
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: {{ .Values.service.managementPort }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: {{ .Values.service.managementPort }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- if .Values.containerSecurityContext }}
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+            {{- else }}
+            {{- include "kc.defaults.containerSecurityContext" . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: keycloak
+              mountPath: /opt/keycloak/data
+            {{- if and .Values.db.ssl.enabled .Values.db.ssl.caSecretName }}
+            - name: db-ssl-ca
+              mountPath: {{ .Values.db.ssl.caSecretMountPath }}
+              subPath: {{ .Values.db.ssl.caSecretKey }}
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: { medium: Memory }
+        - name: keycloak
+          emptyDir: { medium: Memory }
+        {{- if and .Values.db.ssl.enabled .Values.db.ssl.caSecretName }}
+        - name: db-ssl-ca
+          secret:
+            secretName: {{ .Values.db.ssl.caSecretName }}
+            items:
+              - key: {{ .Values.db.ssl.caSecretKey }}
+                path: {{ .Values.db.ssl.caSecretKey }}
+        {{- end }}
