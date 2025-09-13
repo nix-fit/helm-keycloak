@@ -1,6 +1,6 @@
 # keycloak
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
 
 ## Description
 
@@ -12,7 +12,9 @@ Keycloak installation
 | ---- | ------ | --- |
 | Dmitrii Bogomolnyi | <nex1gen@yandex.ru> | <https://github.com/nex1gen> |
 
-## Example values.yaml
+## Values
+
+Example dev.values.yaml
 
 ```yaml
 ---
@@ -54,7 +56,7 @@ helm-docs --skip-version-footer --template-files=README.md.gotmpl
 | env.kcHttpEnabled | string | `"true"` | keycloak enable http |
 | env.kcMetricsEnabled | string | `"true"` | keycloak enable metrics endpoint |
 | env.kcProxyHeaders | string | `"xforwarded"` | keycloak proxy headers to accept |
-| image.digest | string | `"sha256:da058f8bf3f5b88eca8278b3b80df6e0d4bbe281a214dc5e93fae3c94c199e29"` | image digest |
+| image.digest | string | `"sha256:5838c6e0bd64e8d0f2285bcb12ad65a460d1512a94faf044c6b0a875accc619a"` | image digest |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.registry | string | `"nix-docker.registry.twcstorage.ru"` | image registry |
 | image.repository | string | `"keycloak/keycloak"` | image repository |
