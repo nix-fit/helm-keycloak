@@ -1,0 +1,35 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.badgesSection" . }}
+
+## Description
+
+{{ template "chart.description" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+## Example values.yaml
+
+```yaml
+---
+
+ingress:
+  enabled: true
+  host: keycloak-ingress-nginx.host
+  tlsSecretName: keycloak-ingress-nginx-tls
+
+env:
+  kcHostname: keycloak-ingress-nginx.host
+  kcDbUrl: jdbc:postgresql://postgres.host:5432/keycloak_db?sslmode=verify-full&sslrootcert=/etc/ssl/db/ca.crt
+
+```
+
+## Contribute
+
+Don't forget to generate every time actual README.md:
+
+```bash
+helm-docs --skip-version-footer --template-files=README.md.gotmpl
+```
+
+{{ template "chart.valuesSection" . }}
