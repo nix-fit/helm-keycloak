@@ -53,28 +53,28 @@ capabilities:
 Render env from secrets (admin/db) if provided
 */}}
 {{- define "kc.envFromSecrets" -}}
-{{- if .Values.admin.secretName }}
+{{- with .Values.secrets.env.admin }}
 - name: KC_BOOTSTRAP_ADMIN_USERNAME
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.admin.secretName }}
+      name: {{ include "kc.fullname" $ }}-admin-env
       key: KC_BOOTSTRAP_ADMIN_USERNAME
 - name: KC_BOOTSTRAP_ADMIN_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.admin.secretName }}
+      name: {{ include "kc.fullname" $ }}-admin-env
       key: KC_BOOTSTRAP_ADMIN_PASSWORD
 {{- end }}
-{{- if .Values.db.secretName }}
+{{- with .Values.secrets.env.db }}
 - name: KC_DB_USERNAME
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.db.secretName }}
+      name: {{ include "kc.fullname" $ }}-db-env
       key: KC_DB_USERNAME
 - name: KC_DB_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.db.secretName }}
+      name: {{ include "kc.fullname" $ }}-db-env
       key: KC_DB_PASSWORD
 {{- end }}
 {{- end }}
