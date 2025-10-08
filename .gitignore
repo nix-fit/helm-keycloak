@@ -24,3 +24,5 @@ release-*.yaml
 
 # Local development
 dev.values.yaml
+dev.secrets.yaml
+.sops.yaml

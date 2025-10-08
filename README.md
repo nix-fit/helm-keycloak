@@ -1,6 +1,6 @@
 # keycloak
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
+![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
 
 ## Description
 
@@ -42,12 +42,9 @@ helm-docs --skip-version-footer --template-files=README.md.gotmpl
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| admin.secretName | string | `"keycloak-admin-credentials"` | secret name with admin user credentials |
 | containerSecurityContext | object | `{}` | container security context overrides |
-| db.secretName | string | `"keycloak-db-credentials"` | secret name with database user credentials |
 | db.ssl.caSecretKey | string | `"ca.crt"` | key in the secret for ca certificate |
 | db.ssl.caSecretMountPath | string | `"/etc/ssl/db/ca.crt"` | secret mount path |
-| db.ssl.caSecretName | string | `"keycloak-db-ssl-ca"` | secret name containing ca certificate |
 | db.ssl.enabled | bool | `true` | enable mounting ca certificate for tls database connection |
 | env.kcCache | string | `"ispn"` | keycloak cache mechanism (only ispn for production) |
 | env.kcDb | string | `"postgres"` | keycloak database driver type |

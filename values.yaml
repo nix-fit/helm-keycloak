@@ -56,18 +56,10 @@ ingress:
     # -- ingress strict transport secirity header max age
     nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
 
-admin:
-  # -- secret name with admin user credentials
-  secretName: keycloak-admin-credentials
-
 db:
-  # -- secret name with database user credentials
-  secretName: keycloak-db-credentials
   ssl:
     # -- enable mounting ca certificate for tls database connection
     enabled: true
-    # -- secret name containing ca certificate
-    caSecretName: keycloak-db-ssl-ca
     # -- key in the secret for ca certificate
     caSecretKey: ca.crt
     # -- secret mount path

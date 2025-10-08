@@ -37,8 +37,8 @@ spec:
             - name: http-{{ .Values.service.managementPort }}
               containerPort: {{ .Values.service.managementPort }}
           env:
-            {{- include "kc.envFromSecrets" . | nindent 12 }}
-            {{- include "kc.envFromValues" . | nindent 12 }}
+            {{- include "kc.envFromSecrets" . | indent 12 }}
+            {{- include "kc.envFromValues" . | indent 12 }}
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -74,7 +74,7 @@ spec:
               mountPath: /tmp
             - name: keycloak
               mountPath: /opt/keycloak/data
-            {{- if and .Values.db.ssl.enabled .Values.db.ssl.caSecretName }}
+            {{- if .Values.db.ssl.enabled }}
             - name: db-ssl-ca
               mountPath: {{ .Values.db.ssl.caSecretMountPath }}
               subPath: {{ .Values.db.ssl.caSecretKey }}
@@ -85,10 +85,10 @@ spec:
           emptyDir: { medium: Memory }
         - name: keycloak
           emptyDir: { medium: Memory }
-        {{- if and .Values.db.ssl.enabled .Values.db.ssl.caSecretName }}
+        {{- if .Values.db.ssl.enabled }}
         - name: db-ssl-ca
           secret:
-            secretName: {{ .Values.db.ssl.caSecretName }}
+            secretName: {{ include "kc.fullname" . }}-db-ssl-ca
             items:
               - key: {{ .Values.db.ssl.caSecretKey }}
                 path: {{ .Values.db.ssl.caSecretKey }}
