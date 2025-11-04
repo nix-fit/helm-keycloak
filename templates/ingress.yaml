@@ -1,13 +1,13 @@
 {{- if .Values.ingress.enabled }}
-{{- $kcHostname := required "env.kcHostname must be set when ingress.enabled=true" .Values.env.kcHostname -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "kc.fullname" . }}
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "kc.labels" . | nindent 4 }}
+    {{- include "commonlib.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    cert-manager.io/cluster-issuer: {{ .Values.annotations.ingress.certManager.clusterIssuer | quote }}
 spec:
   ingressClassName: {{ .Values.ingress.className | quote }}
   tls:
@@ -18,11 +18,11 @@ spec:
     - host: {{ required "ingress.host must be set when ingress.enabled=true" .Values.ingress.host }}
       http:
         paths:
-          - path: /{{ .Values.ingress.adminPath }}
+          - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.service.name }}
+                name: {{ .Release.Name }}
                 port:
                   number: {{ .Values.service.port }}
 {{- end }}
