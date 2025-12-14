@@ -1,32 +1,34 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "kc.fullname" . }}
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "kc.labels" . | nindent 4 }}
+    {{- include "commonlib.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ .Values.service.headlessName }}
+  serviceName: {{ .Release.Name }}-headless
   replicas: {{ .Values.replicaCount }}
   updateStrategy:
     type: {{ .Values.updateStrategy.type }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "kc.name" . }}
+      {{- include "commonlib.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "kc.labels" . | nindent 8 }}
+        {{- include "commonlib.labels" . | nindent 8 }}
       annotations:
-        {{- include "kc.annotations" . | nindent 8 }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        prometheus.io/scrape: {{ .Values.annotations.statefulset.prometheus.scrape | quote }}
+        prometheus.io/path: {{ .Values.annotations.statefulset.prometheus.path | quote }}
+        prometheus.io/port: {{ .Values.annotations.statefulset.prometheus.port | quote }}
     spec:
       serviceAccount: {{ .Values.serviceAccount.name }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      affinity:
+        {{- include "commonlib.podAntiAffinity" . | nindent 8 }}
       securityContext:
-        {{- if .Values.podSecurityContext }}
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-        {{- else }}
-        {{- include "kc.defaults.podSecurityContext" . | nindent 8 }}
-        {{- end }}
+        {{- include "commonlib.podSecurityContext" . | nindent 8 }}
       containers:
         - name: keycloak
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}@{{ .Values.image.digest }}"
@@ -37,8 +39,8 @@ spec:
             - name: http-{{ .Values.service.managementPort }}
               containerPort: {{ .Values.service.managementPort }}
           env:
-            {{- include "kc.envFromSecrets" . | indent 12 }}
-            {{- include "kc.envFromValues" . | indent 12 }}
+            {{- include "commonlib.envFromValues" . | nindent 12 }}
+            {{- include "commonlib.envFromSecrets" . | nindent 12 }}
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -64,32 +66,26 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
-            {{- if .Values.containerSecurityContext }}
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
-            {{- else }}
-            {{- include "kc.defaults.containerSecurityContext" . | nindent 12 }}
-            {{- end }}
+            {{- include "commonlib.containerSecurityContext" . | nindent 12 }}
           volumeMounts:
-            - name: tmp
-              mountPath: /tmp
+            {{- include "commonlib.volumeMounts" . | nindent 12 }}
             - name: keycloak
               mountPath: /opt/keycloak/data
-            {{- if .Values.db.ssl.enabled }}
-            - name: db-ssl-ca
-              mountPath: {{ .Values.db.ssl.caSecretMountPath }}
-              subPath: {{ .Values.db.ssl.caSecretKey }}
+            {{- $mountDir := .Values.app.secrets.certificatesMountDir }}
+            {{- range .Values.app.secrets.certificates }}
+            - name: certificates
+              mountPath: {{ printf "%s/%s" $mountDir .fileName }}
+              subPath: {{ .fileName }}
               readOnly: true
             {{- end }}
       volumes:
-        - name: tmp
-          emptyDir: { medium: Memory }
+        {{- include "commonlib.volumes" . | nindent 8 }}
         - name: keycloak
-          emptyDir: { medium: Memory }
-        {{- if .Values.db.ssl.enabled }}
-        - name: db-ssl-ca
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+        {{- with .Values.app.secrets.certificates }}
+        - name: certificates
           secret:
-            secretName: {{ include "kc.fullname" . }}-db-ssl-ca
-            items:
-              - key: {{ .Values.db.ssl.caSecretKey }}
-                path: {{ .Values.db.ssl.caSecretKey }}
+            secretName: {{ $.Release.Name }}-certificates
         {{- end }}

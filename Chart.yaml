@@ -1,11 +1,16 @@
 apiVersion: v2
 name: keycloak
-description: Keycloak installation
+description: Keycloak - the open source identity and access management solution
 type: application
-version: 1.0.0
+version: 1.1.0
 appVersion: "26.3.4"
 
 maintainers:
   - email: nex1gen@yandex.ru
     name: Dmitrii Bogomolnyi
     url: https://github.com/nex1gen
+
+dependencies:
+  - name: commonlib
+    repository: oci://nix-docker.registry.twcstorage.ru/helm/libs
+    version: 1.0.0

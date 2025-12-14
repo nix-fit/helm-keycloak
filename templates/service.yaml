@@ -1,11 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.service.name }}
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "kc.labels" . | nindent 4 }}
-  annotations:
-    {{- toYaml .Values.service.annotations | nindent 4 }}
+    {{- include "commonlib.labels" . | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
@@ -18,15 +17,16 @@ spec:
       targetPort: http-{{ .Values.service.managementPort }}
       protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ include "kc.name" . }}
+    {{- include "commonlib.selectorLabels" . | nindent 4 }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.service.headlessName }}
+  name: {{ .Release.Name }}-headless
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "kc.labels" . | nindent 4 }}
+    {{- include "commonlib.labels" . | nindent 4 }}
 spec:
   clusterIP: None
   selector:
-    app.kubernetes.io/name: {{ include "kc.name" . }}
+    {{- include "commonlib.selectorLabels" . | nindent 4 }}

@@ -1,10 +1,10 @@
 # keycloak
 
-![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
+![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
 
 ## Description
 
-Keycloak installation
+Keycloak - the open source identity and access management solution
 
 ## Maintainers
 
@@ -14,7 +14,7 @@ Keycloak installation
 
 ## Values
 
-Example dev.values.yaml
+Example values.yaml
 
 ```yaml
 ---
@@ -24,10 +24,10 @@ ingress:
   host: keycloak-ingress-nginx.host
   tlsSecretName: keycloak-ingress-nginx-tls
 
-env:
-  kcHostname: keycloak-ingress-nginx.host
-  kcDbUrl: jdbc:postgresql://postgres.host:5432/keycloak_db?sslmode=verify-full&sslrootcert=/etc/ssl/db/ca.crt
-
+app:
+  env:
+    KC_HOSTNAME: keycloak-ingress-nginx.host
+    KC_DB_URL: jdbc:postgresql://postgres.host:5432/keycloak_db?sslmode=verify-full&sslrootcert=/etc/ssl/db-ca.crt
 ```
 
 ## Contribute
@@ -35,39 +35,36 @@ env:
 Don't forget to generate every time actual README.md:
 
 ```bash
-helm-docs --skip-version-footer --template-files=README.md.gotmpl
+helm-docs --template-files=README.md.gotmpl
 ```
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| containerSecurityContext | object | `{}` | container security context overrides |
-| db.ssl.caSecretKey | string | `"ca.crt"` | key in the secret for ca certificate |
-| db.ssl.caSecretMountPath | string | `"/etc/ssl/db/ca.crt"` | secret mount path |
-| db.ssl.enabled | bool | `true` | enable mounting ca certificate for tls database connection |
-| env.kcCache | string | `"ispn"` | keycloak cache mechanism (only ispn for production) |
-| env.kcDb | string | `"postgres"` | keycloak database driver type |
-| env.kcHealthEnabled | string | `"true"` | keycloak enable health endpoints |
-| env.kcHostnameStrict | string | `"true"` | keycloak strict hostname |
-| env.kcHttpEnabled | string | `"true"` | keycloak enable http |
-| env.kcMetricsEnabled | string | `"true"` | keycloak enable metrics endpoint |
-| env.kcProxyHeaders | string | `"xforwarded"` | keycloak proxy headers to accept |
+| annotations.ingress.certManager.clusterIssuer | string | `"letsencrypt-prod"` | cert manager cluster issuer |
+| annotations.statefulset.prometheus.path | string | `"/metrics"` | prometheus metrics path |
+| annotations.statefulset.prometheus.port | string | `"9000"` | prometheus metrics port |
+| annotations.statefulset.prometheus.scrape | string | `"true"` | prometheus scrape enabled |
+| app.env.KC_CACHE | string | `"ispn"` | keycloak cache mechanism (only ispn for production) |
+| app.env.KC_DB | string | `"postgres"` | keycloak database driver type |
+| app.env.KC_HEALTH_ENABLED | string | `"true"` | keycloak enable health endpoints |
+| app.env.KC_HOSTNAME_STRICT | string | `"true"` | keycloak strict hostname |
+| app.env.KC_HTTP_ENABLED | string | `"true"` | keycloak enable http |
+| app.env.KC_METRICS_ENABLED | string | `"true"` | keycloak enable metrics endpoint |
+| app.env.KC_PROXY_HEADERS | string | `"xforwarded"` | keycloak proxy headers to accept |
+| app.secrets.certificates | string | `nil` | app secrets certificates (store them in sops encrypted file) |
+| app.secrets.certificatesMountDir | string | `"/etc/ssl"` | app secrets certificates mount directory |
+| app.secrets.env | string | `nil` | app secrets env (store them in sops encrypted file) |
 | image.digest | string | `"sha256:5838c6e0bd64e8d0f2285bcb12ad65a460d1512a94faf044c6b0a875accc619a"` | image digest |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.registry | string | `"nix-docker.registry.twcstorage.ru"` | image registry |
-| image.repository | string | `"keycloak/keycloak"` | image repository |
+| image.repository | string | `"infra/auth/keycloak"` | image repository |
 | image.tag | string | `"26.3.4"` | image tag |
-| ingress.adminPath | string | `""` | ingress custom path |
-| ingress.annotations."cert-manager.io/cluster-issuer" | string | `"letsencrypt-prod"` | cert manager cluster issuer for signing ssl certificates |
-| ingress.annotations."nginx.ingress.kubernetes.io/hsts" | string | `"true"` | ingress add strict transport secirity header to response |
-| ingress.annotations."nginx.ingress.kubernetes.io/hsts-max-age" | string | `"31536000"` | ingress strict transport secirity header max age |
-| ingress.annotations."nginx.ingress.kubernetes.io/ssl-redirect" | string | `"true"` | ingress redirect from http to https |
 | ingress.className | string | `"nginx"` | ingress class name |
-| ingress.enabled | bool | `false` | open access to keycloak outside cluster |
+| ingress.enabled | bool | `false` | open access to app outside cluster via ingress |
 | ingress.host | string | `""` | ingress host |
-| ingress.tlsSecretName | string | `""` | ingress tls secret name |
-| podSecurityContext | object | `{}` | pod security context overrides |
+| ingress.tlsSecretName | string | `""` | ingress tls secret name (where to store signed certificate from Let's Encrypt) |
 | probes.liveness.failureThreshold | int | `5` | liveness probe max consecutive failures before restart |
 | probes.liveness.initialDelaySeconds | int | `60` | liveness probe initial delay |
 | probes.liveness.path | string | `"/health/live"` | liveness probe path |
@@ -80,12 +77,12 @@ helm-docs --skip-version-footer --template-files=README.md.gotmpl
 | probes.readiness.timeoutSeconds | int | `1` | readiness probe timeout per attempt |
 | replicaCount | int | `2` | replica count |
 | resources.limits.cpu | string | `"1000m"` | cpu limits |
+| resources.limits.ephemeral-storage | string | `"512Mi"` | ephemeral storage limits |
 | resources.limits.memory | string | `"1Gi"` |  |
 | resources.requests.cpu | string | `"250m"` | cpu requests |
+| resources.requests.ephemeral-storage | string | `"256Mi"` | ephemeral storage requests |
 | resources.requests.memory | string | `"512Mi"` | memory requests |
-| service.headlessName | string | `"keycloak-headless"` | headless service name |
 | service.managementPort | int | `9000` | management port (health, metrics) |
-| service.name | string | `"keycloak"` | service name |
 | service.port | int | `8080` | service port (app) |
 | serviceAccount.automountServiceAccountToken | bool | `false` | service account auto mount token |
 | serviceAccount.name | string | `"keycloak"` | service account name |

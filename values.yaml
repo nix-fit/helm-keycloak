@@ -4,7 +4,7 @@ image:
   # -- image registry
   registry: nix-docker.registry.twcstorage.ru
   # -- image repository
-  repository: keycloak/keycloak
+  repository: infra/auth/keycloak
   # -- image tag
   tag: 26.3.4
   # -- image digest
@@ -26,44 +26,58 @@ updateStrategy:
   type: RollingUpdate
 
 service:
-  # -- service name
-  name: keycloak
-  # -- headless service name
-  headlessName: keycloak-headless
   # -- service port (app)
   port: 8080
   # -- management port (health, metrics)
   managementPort: 9000
 
 ingress:
-  # -- open access to keycloak outside cluster
+  # -- open access to app outside cluster via ingress
   enabled: false
   # -- ingress class name
   className: nginx
   # -- ingress host
   host: ""
-  # -- ingress tls secret name
+  # -- ingress tls secret name (where to store signed certificate from Let's Encrypt)
   tlsSecretName: ""
-  # -- ingress custom path
-  adminPath: ""
-  annotations:
-    # -- cert manager cluster issuer for signing ssl certificates
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    # -- ingress redirect from http to https
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    # -- ingress add strict transport secirity header to response
-    nginx.ingress.kubernetes.io/hsts: "true"
-    # -- ingress strict transport secirity header max age
-    nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
 
-db:
-  ssl:
-    # -- enable mounting ca certificate for tls database connection
-    enabled: true
-    # -- key in the secret for ca certificate
-    caSecretKey: ca.crt
-    # -- secret mount path
-    caSecretMountPath: /etc/ssl/db/ca.crt
+app:
+  env:
+    # -- keycloak proxy headers to accept
+    KC_PROXY_HEADERS: xforwarded
+    # -- keycloak enable http
+    KC_HTTP_ENABLED: "true"
+    # -- keycloak strict hostname
+    KC_HOSTNAME_STRICT: "true"
+    # -- keycloak enable health endpoints
+    KC_HEALTH_ENABLED: "true"
+    # -- keycloak cache mechanism (only ispn for production)
+    KC_CACHE: ispn
+    # -- keycloak enable metrics endpoint
+    KC_METRICS_ENABLED: "true"
+    # -- keycloak database driver type
+    KC_DB: postgres
+  secrets:
+    # -- app secrets env (store them in sops encrypted file)
+    env:
+    # -- app secrets certificates mount directory
+    certificatesMountDir: /etc/ssl
+    # -- app secrets certificates (store them in sops encrypted file)
+    certificates:
+
+annotations:
+  statefulset:
+    prometheus:
+      # -- prometheus scrape enabled
+      scrape: "true"
+      # -- prometheus metrics path
+      path: "/metrics"
+      # -- prometheus metrics port
+      port: "9000"
+  ingress:
+    certManager:
+      # -- cert manager cluster issuer
+      clusterIssuer: "letsencrypt-prod"
 
 resources:
   requests:
@@ -71,17 +85,15 @@ resources:
     cpu: 250m
     # -- memory requests
     memory: 512Mi
+    # -- ephemeral storage requests
+    ephemeral-storage: 256Mi
   limits:
     # -- cpu limits
     cpu: 1000m
     # memory limits
     memory: 1Gi
-
-# -- pod security context overrides
-podSecurityContext: {}
-
-# -- container security context overrides
-containerSecurityContext: {}
+    # -- ephemeral storage limits
+    ephemeral-storage: 512Mi
 
 probes:
   liveness:
@@ -106,19 +118,3 @@ probes:
     timeoutSeconds: 1
     # -- readiness probe max consecutive failures before unready
     failureThreshold: 5
-
-env:
-  # -- keycloak proxy headers to accept
-  kcProxyHeaders: xforwarded
-  # -- keycloak enable http
-  kcHttpEnabled: "true"
-  # -- keycloak strict hostname
-  kcHostnameStrict: "true"
-  # -- keycloak enable health endpoints
-  kcHealthEnabled: "true"
-  # -- keycloak cache mechanism (only ispn for production)
-  kcCache: ispn
-  # -- keycloak enable metrics endpoint
-  kcMetricsEnabled: "true"
-  # -- keycloak database driver type
-  kcDb: postgres
