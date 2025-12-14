@@ -1,0 +1,66 @@
+---
+{{- if and .Values.gateway.enabled (not .Values.ingress.enabled) }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Release.Name }}-redirect
+  namespace: {{ .Release.Namespace }}
+spec:
+  hostnames:
+  - {{ required "gateway.httpRoute.host must be set when gateway.enabled=true" .Values.gateway.httpRoute.host  }}
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ .Values.gateway.name }}
+    namespace: {{ .Values.gateway.namespace }}
+    sectionName: http-80
+  rules:
+  - filters:
+    - requestRedirect:
+        port: 443
+        scheme: https
+        statusCode: 301
+      type: RequestRedirect
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  hostnames:
+  - {{ required "gateway.httpRoute.host must be set when gateway.enabled=true" .Values.gateway.httpRoute.host  }}
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ .Values.gateway.name }}
+    namespace: {{ .Values.gateway.namespace }}
+    sectionName: https-443
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: {{ .Release.Name }}
+      port: {{ .Values.service.port }}
+      weight: 1
+    filters:
+    {{- if .Values.gateway.httpRoute.filters.responseHeaderModifier }}
+    - responseHeaderModifier:
+        {{- if .Values.gateway.httpRoute.filters.responseHeaderModifier.set }}
+        set:
+        {{- range .Values.gateway.httpRoute.filters.responseHeaderModifier.set }}
+        - name: {{ .name }}
+          value: {{ .value }}
+        {{- end }}
+        {{- end }}
+      type: ResponseHeaderModifier
+      {{- end }}
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+{{- end }}

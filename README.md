@@ -1,6 +1,6 @@
 # keycloak
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
+![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
 
 ## Description
 
@@ -56,6 +56,11 @@ helm-docs --template-files=README.md.gotmpl
 | app.secrets.certificates | string | `nil` | app secrets certificates (store them in sops encrypted file) |
 | app.secrets.certificatesMountDir | string | `"/etc/ssl"` | app secrets certificates mount directory |
 | app.secrets.env | string | `nil` | app secrets env (store them in sops encrypted file) |
+| gateway.enabled | bool | `false` | gateway enabled |
+| gateway.httpRoute.filters.responseHeaderModifier.set | list | `[{"name":"Content-Security-Policy","value":"frame-src 'self'; frame-ancestors 'self'; object-src 'none';"},{"name":"Referrer-Policy","value":"no-referrer"},{"name":"Strict-Transport-Security","value":"max-age=31536000; includeSubDomains"},{"name":"X-Content-Type-Options","value":"nosniff"},{"name":"X-Frame-Options","value":"SAMEORIGIN"}]` | response header modifier filter set (override headers values) |
+| gateway.httpRoute.host | string | `""` | httproute hostname |
+| gateway.name | string | `"envoy-gateway"` | gateway object name |
+| gateway.namespace | string | `"envoy-gateway-system"` | gateway object namespace |
 | image.digest | string | `"sha256:5838c6e0bd64e8d0f2285bcb12ad65a460d1512a94faf044c6b0a875accc619a"` | image digest |
 | image.pullPolicy | string | `"Always"` | image pull policy |
 | image.registry | string | `"nix-docker.registry.twcstorage.ru"` | image registry |
@@ -65,6 +70,7 @@ helm-docs --template-files=README.md.gotmpl
 | ingress.enabled | bool | `false` | open access to app outside cluster via ingress |
 | ingress.host | string | `""` | ingress host |
 | ingress.tlsSecretName | string | `""` | ingress tls secret name (where to store signed certificate from Let's Encrypt) |
+| podDisruptionBudget.maxUnavailable | int | `1` | pod disruption budget max unavailable |
 | probes.liveness.failureThreshold | int | `5` | liveness probe max consecutive failures before restart |
 | probes.liveness.initialDelaySeconds | int | `60` | liveness probe initial delay |
 | probes.liveness.path | string | `"/health/live"` | liveness probe path |

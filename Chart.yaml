@@ -2,7 +2,7 @@ apiVersion: v2
 name: keycloak
 description: Keycloak - the open source identity and access management solution
 type: application
-version: 1.1.0
+version: 1.2.0
 appVersion: "26.3.4"
 
 maintainers:
