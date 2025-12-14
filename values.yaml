@@ -41,6 +41,35 @@ ingress:
   # -- ingress tls secret name (where to store signed certificate from Let's Encrypt)
   tlsSecretName: ""
 
+gateway:
+  # -- gateway enabled
+  enabled: false
+  # -- gateway object name
+  name: envoy-gateway
+  # -- gateway object namespace
+  namespace: envoy-gateway-system
+  httpRoute:
+    # -- httproute hostname
+    host: ""
+    filters:
+      responseHeaderModifier:
+        # -- response header modifier filter set (override headers values)
+        set:
+        - name: Content-Security-Policy
+          value: frame-src 'self'; frame-ancestors 'self'; object-src 'none';
+        - name: Referrer-Policy
+          value: no-referrer
+        - name: Strict-Transport-Security
+          value: max-age=31536000; includeSubDomains
+        - name: X-Content-Type-Options
+          value: nosniff
+        - name: X-Frame-Options
+          value: SAMEORIGIN
+
+podDisruptionBudget:
+  # -- pod disruption budget max unavailable
+  maxUnavailable: 1
+
 app:
   env:
     # -- keycloak proxy headers to accept
