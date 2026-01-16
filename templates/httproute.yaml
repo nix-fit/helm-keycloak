@@ -13,7 +13,7 @@ spec:
     kind: Gateway
     name: {{ .Values.gateway.name }}
     namespace: {{ .Values.gateway.namespace }}
-    sectionName: http-80
+    sectionName: {{ .Values.gateway.httpRoute.httpSectionName }}
   rules:
   - filters:
     - requestRedirect:
@@ -39,7 +39,7 @@ spec:
     kind: Gateway
     name: {{ .Values.gateway.name }}
     namespace: {{ .Values.gateway.namespace }}
-    sectionName: https-443
+    sectionName: https-{{ .Release.Name }}-443
   rules:
   - backendRefs:
     - group: ""

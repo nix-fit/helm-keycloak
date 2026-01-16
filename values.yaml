@@ -14,7 +14,7 @@ image:
 
 serviceAccount:
   # -- service account name
-  name: keycloak
+  name: default
   # -- service account auto mount token
   automountServiceAccountToken: false
 
@@ -49,6 +49,8 @@ gateway:
   # -- gateway object namespace
   namespace: envoy-gateway-system
   httpRoute:
+    # -- httproute gateway parentRef
+    httpSectionName: http-80
     # -- httproute hostname
     host: ""
     filters:

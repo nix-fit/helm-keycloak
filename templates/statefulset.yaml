@@ -23,7 +23,7 @@ spec:
         prometheus.io/path: {{ .Values.annotations.statefulset.prometheus.path | quote }}
         prometheus.io/port: {{ .Values.annotations.statefulset.prometheus.port | quote }}
     spec:
-      serviceAccount: {{ .Values.serviceAccount.name }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       affinity:
         {{- include "commonlib.podAntiAffinity" . | nindent 8 }}
