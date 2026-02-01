@@ -1,6 +1,6 @@
 # keycloak
 
-![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
+![Version: 1.2.1](https://img.shields.io/badge/Version-1.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 26.3.4](https://img.shields.io/badge/AppVersion-26.3.4-informational?style=flat-square)
 
 ## Description
 
@@ -14,7 +14,7 @@ Keycloak - the open source identity and access management solution
 
 ## Values
 
-Example values.yaml
+Example values.yaml (Ingress)
 
 ```yaml
 ---
@@ -23,6 +23,23 @@ ingress:
   enabled: true
   host: keycloak-ingress-nginx.host
   tlsSecretName: keycloak-ingress-nginx-tls
+
+app:
+  env:
+    KC_HOSTNAME: keycloak-ingress-nginx.host
+    KC_DB_URL: jdbc:postgresql://postgres.host:5432/keycloak_db?sslmode=verify-full&sslrootcert=/etc/ssl/db-ca.crt
+```
+
+Example values.yaml (Gateway API)
+
+```yaml
+---
+
+# Gateway object must be created in gateway namespace
+gateway:
+  enabled: true
+  httpRoute:
+    host: keycloak-ingress-nginx.host
 
 app:
   env:
@@ -59,6 +76,7 @@ helm-docs --template-files=README.md.gotmpl
 | gateway.enabled | bool | `false` | gateway enabled |
 | gateway.httpRoute.filters.responseHeaderModifier.set | list | `[{"name":"Content-Security-Policy","value":"frame-src 'self'; frame-ancestors 'self'; object-src 'none';"},{"name":"Referrer-Policy","value":"no-referrer"},{"name":"Strict-Transport-Security","value":"max-age=31536000; includeSubDomains"},{"name":"X-Content-Type-Options","value":"nosniff"},{"name":"X-Frame-Options","value":"SAMEORIGIN"}]` | response header modifier filter set (override headers values) |
 | gateway.httpRoute.host | string | `""` | httproute hostname |
+| gateway.httpRoute.httpSectionName | string | `"http-80"` | httproute gateway parentRef |
 | gateway.name | string | `"envoy-gateway"` | gateway object name |
 | gateway.namespace | string | `"envoy-gateway-system"` | gateway object namespace |
 | image.digest | string | `"sha256:5838c6e0bd64e8d0f2285bcb12ad65a460d1512a94faf044c6b0a875accc619a"` | image digest |
@@ -91,5 +109,5 @@ helm-docs --template-files=README.md.gotmpl
 | service.managementPort | int | `9000` | management port (health, metrics) |
 | service.port | int | `8080` | service port (app) |
 | serviceAccount.automountServiceAccountToken | bool | `false` | service account auto mount token |
-| serviceAccount.name | string | `"keycloak"` | service account name |
+| serviceAccount.name | string | `"default"` | service account name |
 | updateStrategy.type | string | `"RollingUpdate"` | update strategy type |

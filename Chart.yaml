@@ -2,7 +2,7 @@ apiVersion: v2
 name: keycloak
 description: Keycloak - the open source identity and access management solution
 type: application
-version: 1.2.0
+version: 1.2.1
 appVersion: "26.3.4"
 
 maintainers:
@@ -13,4 +13,4 @@ maintainers:
 dependencies:
   - name: commonlib
     repository: oci://nix-docker.registry.twcstorage.ru/helm/libs
-    version: 1.0.0
+    version: 1.0.1

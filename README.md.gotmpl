@@ -10,7 +10,7 @@
 
 ## Values
 
-Example values.yaml
+Example values.yaml (Ingress)
 
 ```yaml
 ---
@@ -19,6 +19,23 @@ ingress:
   enabled: true
   host: keycloak-ingress-nginx.host
   tlsSecretName: keycloak-ingress-nginx-tls
+
+app:
+  env:
+    KC_HOSTNAME: keycloak-ingress-nginx.host
+    KC_DB_URL: jdbc:postgresql://postgres.host:5432/keycloak_db?sslmode=verify-full&sslrootcert=/etc/ssl/db-ca.crt
+```
+
+Example values.yaml (Gateway API)
+
+```yaml
+---
+
+# Gateway object must be created in gateway namespace
+gateway:
+  enabled: true
+  httpRoute:
+    host: keycloak-ingress-nginx.host
 
 app:
   env:
